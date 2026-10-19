@@ -1,0 +1,256 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Custom Google Reviews Pro 2.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-21 12:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language-Team: \n"
+"Language: en_US\n"
+
+msgid "Anonymous"
+msgstr ""
+
+msgid "Please configure Google API connection in the dashboard."
+msgstr ""
+
+msgid "No reviews match the current filtering threshold."
+msgstr ""
+
+msgid "%s ago"
+msgstr ""
+
+msgid "Profile Photo"
+msgstr ""
+
+msgid "Read More"
+msgstr ""
+
+msgid "Read Less"
+msgstr ""
+
+msgid "Verified Review"
+msgstr ""
+
+msgid "Posted on"
+msgstr ""
+
+msgid "Google Reviews"
+msgstr ""
+
+msgid "Google Reviews Pro Dashboard"
+msgstr ""
+
+msgid "Support the Development"
+msgstr ""
+
+msgid "If this plugin adds value to your business, consider supporting our ongoing updates and maintenance!"
+msgstr ""
+
+msgid "Donate Now"
+msgstr ""
+
+msgid "How to Display Your Reviews"
+msgstr ""
+
+msgid "Option A: WordPress Block Editor"
+msgstr ""
+
+msgid "Open any page, click the + button, and search for the Google Reviews Pro block."
+msgstr ""
+
+msgid "Option B: Shortcode & Overrides"
+msgstr ""
+
+msgid "Use the basic shortcode, or change specific settings just for one page using overrides:"
+msgstr ""
+
+msgid "1. Google Account Connection"
+msgstr ""
+
+msgid "Google Places API Key"
+msgstr ""
+
+msgid "Get your Google Places API Key here"
+msgstr ""
+
+msgid "Google Place ID"
+msgstr ""
+
+msgid "Find your Google Place ID here"
+msgstr ""
+
+msgid "2. Choose Your Layout Style"
+msgstr ""
+
+msgid "Minimal Text Carousel"
+msgstr ""
+
+msgid "Boxed Card Carousel"
+msgstr ""
+
+msgid "Grid / Columns (No Slider)"
+msgstr ""
+
+msgid "3. Behavior & Display Rules"
+msgstr ""
+
+msgid "Sort Reviews By"
+msgstr ""
+
+msgid "Highest Rating First"
+msgstr ""
+
+msgid "Newest Reviews First"
+msgstr ""
+
+msgid "Random / Shuffle"
+msgstr ""
+
+msgid "Minimum Star Rating to Show"
+msgstr ""
+
+msgid "5 Stars Only"
+msgstr ""
+
+msgid "4 Stars & Up"
+msgstr ""
+
+msgid "Show All Reviews"
+msgstr ""
+
+msgid "Maximum Number of Reviews"
+msgstr ""
+
+msgid "reviews"
+msgstr ""
+
+msgid "\"Read More\" Character Cutoff"
+msgstr ""
+
+msgid "characters"
+msgstr ""
+
+msgid "Choose What to Display"
+msgstr ""
+
+msgid "Show Reviewer Profile Photos"
+msgstr ""
+
+msgid "Show Review Date"
+msgstr ""
+
+msgid "Show Verified Review Badge"
+msgstr ""
+
+msgid "Show Posted on Google Logo"
+msgstr ""
+
+msgid "Slider Navigation Buttons"
+msgstr ""
+
+msgid "Dots Only"
+msgstr ""
+
+msgid "Arrows Only"
+msgstr ""
+
+msgid "Both Dots & Arrows"
+msgstr ""
+
+msgid "None (Autoplay Only)"
+msgstr ""
+
+msgid "Columns per row"
+msgstr ""
+
+msgid "2 Columns"
+msgstr ""
+
+msgid "3 Columns"
+msgstr ""
+
+msgid "4 Columns"
+msgstr ""
+
+msgid "Slider Autoplay Speed"
+msgstr ""
+
+msgid "4. Colors & Styling"
+msgstr ""
+
+msgid "Section Background Color"
+msgstr ""
+
+msgid "Card Background Color"
+msgstr ""
+
+msgid "Star Rating Color"
+msgstr ""
+
+msgid "Review Text Color"
+msgstr ""
+
+msgid "Customer Name Color"
+msgstr ""
+
+msgid "Slider Arrows & Dots Color"
+msgstr ""
+
+msgid "\"Read More\" Link Color"
+msgstr ""
+
+msgid "Verified Badge Color"
+msgstr ""
+
+msgid "Text Typography Size (px)"
+msgstr ""
+
+msgid "Card Padding (px)"
+msgstr ""
+
+msgid "Card Corner Radius (px)"
+msgstr ""
+
+msgid "Save Configurations Matrix"
+msgstr ""
+
+msgid "Real-Time Live Engine Preview"
+msgstr ""
+
+msgid "Yogesh Sharma"
+msgstr ""
+
+msgid "2 weeks ago"
+msgstr ""
+
+msgid "Excellent service from initial onboarding to final structural configurations. Net Greater Tech team delivered a highly performant module."
+msgstr ""
+
+msgid "Ananya Iyer"
+msgstr ""
+
+msgid "3 weeks ago"
+msgstr ""
+
+msgid "High efficiency performance. The WordPress multi-tenant architecture implementation handles massive data loops flawlessly."
+msgstr ""
+
+msgid "David Miller"
+msgstr ""
+
+msgid "1 month ago"
+msgstr ""
+
+msgid "Fast response time, incredible customizability options, and super clean design on mobile devices."
+msgstr ""
+
+msgid "Sarah Jenkins"
+msgstr ""
+
+msgid "2 months ago"
+msgstr ""
+
+msgid "Seamless integration into WordPress block editor. Highly recommended for any business looking to build trust."
+msgstr ""
