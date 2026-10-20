@@ -1,24 +1,69 @@
 === Custom Google Reviews Pro ===
-Contributors: Net Greater Technologies, LLP
-Tags: google reviews, testimonials, slider, live preview, swiper, modular
+Contributors: netgreater
+Tags: google reviews, reviews slider, google places api, outscraper, apify
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.3
+Stable tag: 2.4
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Plugin URI: https://www.netgreater.com
-Author URI: https://www.netgreater.com
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Premium, clean Google Reviews interface system built specifically by Net Greater Technologies, LLP.
+Premium Google Reviews plugin with custom database table storage, manual sync, automatic background sync, and native Block Editor integration.
 
 == Description ==
 
-Custom Google Reviews Pro connects to the Google Places API to extract business feedback data and parse it into highly optimized UI formats across three functional layouts.
+Custom Google Reviews Pro allows you to seamlessly pull, store, and display your Google Reviews on your WordPress website. 
 
-Features:
-*   Real-Time Live Engine Preview: Interactive JavaScript canvas allows real-time rendering changes right inside your admin dashboard page.
-*   Three Layout Frameworks: Minimal Clean Slider, Boxed Cards Carousel, and Dynamic Columns Grid.
-*   Dynamic Script Expansion: Integrated smart JS "Read More" architecture handling text cutoff optimization.
-*   Granular Customizer: Specific hex color-pickers for stars, navigation elements, card parameters, text boundaries, and padding setups.
-*   Optimized Data Caching: Variable synchronization frequencies (12h, 24h, 7d, 30d) minimizing extraneous remote resource connections.
+By saving reviews to a custom database table, this plugin ensures your frontend load times remain blazing fast while protecting you from API rate limits. With the recent updates, you can now bypass Google's strict 5-review limit by utilizing third-party scraper APIs or the Google Places Legacy API.
+
+### Key Features
+*   **Multiple Data Sources:** Fetch reviews using the Google Places API (New), Google Places API (Legacy), Outscraper API, or Apify Scraper API.
+*   **Local Database Storage:** Reviews are saved locally in a custom table, completely eliminating frontend API lag.
+*   **Manual Review Creation:** Easily add manual or custom reviews directly from the dashboard to display alongside your Google reviews.
+*   **Automatic Background Sync:** Set your reviews to sync automatically every 12 hours, 24 hours, 7 days, 15 days, or 30 days via a lightweight background cron job.
+*   **Hide Blank Reviews:** Toggle off rating-only reviews that do not contain written text.
+*   **Three Layout Styles:** Choose between a Minimal Text Carousel, a Boxed Card Carousel, or a Static Grid.
+*   **Deep Customization:** Control star colors, text weights, badge colors, card radius, and background colors directly from the settings matrix.
+*   **Native Gutenberg Block:** Drop the reviews directly into your pages using the native block editor or via a simple `[custom_google_reviews]` shortcode[cite: 5, 8].
+*   **Live Admin Preview:** See exactly how your reviews will look on the frontend in real-time as you tweak the typography and color settings.
+
+== Installation ==
+
+1. Upload the `custom-google-reviews` folder to the `/wp-content/plugins/` directory, or install the ZIP file via the WordPress plugins dashboard.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Navigate to the **Google Reviews** menu in your dashboard.
+4. Under **Data Source Connection**, select your preferred API provider (Google, Outscraper, or Apify) and enter the required API Key/Token.
+5. Click **Save Configurations Matrix**, then click **Sync Reviews Now** to populate your local database.
+6. Configure your display settings, colors, and typography.
+7. Use the Gutenberg block "Google Reviews Pro" or the shortcode `[custom_google_reviews]` to display the slider on your site.
+
+== Frequently Asked Questions ==
+
+= Why are only 5 reviews showing when using the Google API? =
+The Google Places API (New) limits responses to 5 relevant reviews. To bypass this and fetch all chronological reviews, switch your API Provider to **Outscraper API** or **Apify** in the settings.
+
+= How do I hide reviews that have no text? =
+Go to the Behavior & Display Rules section and check the "Hide Blank Reviews" box. 
+
+= Can I add a review manually? =
+Yes. Scroll to the bottom of the settings page and use the "Add Manual Review" form to inject a custom review into the database. It will immediately appear in your slider.
+
+= Are API keys secure? =
+Yes, API keys are masked by default in the admin panel to prevent shoulder-surfing. You can toggle their visibility using the eye icon.
+
+== Changelog ==
+
+= 2.4 =
+* Feature: Added support for Outscraper API to bypass Google's 5-review limit.
+* Feature: Added support for Apify Scraper API integration.
+* Feature: Added support for Google Places API (Legacy) endpoint.
+* Feature: Added "Add Manual Review" form to inject custom reviews into the database table.
+* Feature: Added option to hide blank/rating-only reviews.
+* Feature: Added backend pagination for the "All Stored Reviews" database table (displays 5 per page).
+* Feature: Added 15-day and 30-day intervals for automatic background syncing.
+* Enhancement: Masked API Key input fields for better security with a visibility toggle.
+* Enhancement: Reorganized dashboard layout to move database tables and manual entry forms below the Live Preview Engine.
+* Fix: Handled dynamic API field rendering based on the selected provider.
+
+= 2.3 =
+* Initial release of the Pro version with custom database storage, WP Cron sync, block editor integration, and real-time live preview engine[cite: 5].

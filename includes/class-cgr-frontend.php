@@ -48,6 +48,7 @@ class CGR_Frontend {
             'show_date'      => get_option( 'cgr_show_date', 1 ),
             'show_badge'     => get_option( 'cgr_show_badge', 1 ),
             'show_google'    => get_option( 'cgr_show_google_logo', 1 ),
+            'hide_blank'     => get_option( 'cgr_hide_blank_reviews', 1 ), // Added setting
             'section_bg'     => get_option( 'cgr_section_bg', 'transparent' ),
             'bg_color'       => get_option( 'cgr_bg_color', '#ffffff' ),
             
@@ -94,6 +95,7 @@ class CGR_Frontend {
         $show_date      = filter_var( $atts['show_date'], FILTER_VALIDATE_BOOLEAN );
         $show_badge     = filter_var( $atts['show_badge'], FILTER_VALIDATE_BOOLEAN );
         $show_google    = filter_var( $atts['show_google'], FILTER_VALIDATE_BOOLEAN );
+        $hide_blank     = filter_var( $atts['hide_blank'], FILTER_VALIDATE_BOOLEAN ); // Parse setting
 
         $section_bg     = esc_attr( $atts['section_bg'] );
         $bg_color       = esc_attr( $atts['bg_color'] );
@@ -127,6 +129,12 @@ class CGR_Frontend {
         $filtered_reviews = array();
         foreach ( $raw_reviews as $review ) {
             $rating = isset( $review['rating'] ) ? (int) $review['rating'] : 5;
+            
+            // Check if blank reviews should be skipped
+            if ( $hide_blank && empty( trim( $review['text'] ) ) ) {
+                continue;
+            }
+
             if ( $rating >= $min_rating ) {
                 $filtered_reviews[] = $review;
             }
