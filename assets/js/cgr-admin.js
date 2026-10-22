@@ -15,7 +15,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 row.style.display = 'none';
             }
         });
+
+        toggleModalStyleRow();
         updateLivePreview();
+    }
+
+    function toggleModalStyleRow() {
+        const actionSelect = document.getElementById('cgr_readmore_action');
+        const modalRow = document.getElementById('cgr-modal-style-row');
+        if (actionSelect && modalRow) {
+            modalRow.style.display = (actionSelect.value === 'modal') ? 'table-row' : 'none';
+        }
     }
 
     function hexToRgba(hex, opacity) {
@@ -39,12 +49,15 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function updateLivePreview() {
+        toggleModalStyleRow();
+
         const layoutInput = document.querySelector('input[name="cgr_layout"]:checked');
         if (!layoutInput) return;
         const layout = layoutInput.value;
         
         const navType = getVal('cgr_nav_type', 'dots');
         const gridCols = parseInt(getVal('cgr_grid_columns', '3'));
+        const excerptLen = parseInt(getVal('cgr_excerpt_length', '160')) || 160;
         
         const sectionBg = getVal('cgr_section_bg', 'transparent');
         const bgColor = getVal('cgr_bg_color', '#ffffff');
@@ -118,6 +131,18 @@ document.addEventListener("DOMContentLoaded", function() {
             const badge = card.querySelector('.cgr-verified-badge');
             const googleLogo = card.querySelector('.cgr-preview-google-logo');
             const authorName = card.querySelector('.cgr-preview-author-name');
+
+            // Apply live character cutoff in preview
+            if (quote) {
+                const rawText = quote.getAttribute('data-raw-text') || '';
+                if (rawText.length > excerptLen) {
+                    quote.textContent = '"' + rawText.substring(0, excerptLen).trim() + '..."';
+                    if (readMore) readMore.style.display = 'inline-block';
+                } else {
+                    quote.textContent = '"' + rawText + '"';
+                    if (readMore) readMore.style.display = 'none';
+                }
+            }
 
             if (layout === 'minimal_slider') {
                 card.style.background = 'transparent';
@@ -211,7 +236,8 @@ document.addEventListener("DOMContentLoaded", function() {
         'cgr_quote_weight', 'cgr_name_weight', 'cgr_badge_weight', 'cgr_watermark_weight',
         'cgr_card_padding', 'cgr_card_radius', 'cgr_nav_type', 
         'cgr_grid_columns', 'cgr_show_avatars', 'cgr_show_date', 'cgr_show_badge', 
-        'cgr_show_google_logo', 'cgr_excerpt_length' 
+        'cgr_show_google_logo', 'cgr_excerpt_length', 'cgr_readmore_action',
+        'cgr_modal_bg', 'cgr_modal_text_color', 'cgr_modal_radius'
     ];
     previewTriggers.forEach(id => {
         const el = document.getElementById(id);

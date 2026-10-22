@@ -58,30 +58,54 @@ class CGR_Admin {
 
     public function register_settings() {
         $settings = array(
-            'cgr_api_provider'   => 'google_new', 
-            'cgr_api_key'        => '', 
-            'cgr_place_id'       => '', 
-            'cgr_outscraper_key' => '',
-            'cgr_apify_token'    => '',
-            'cgr_maps_url'       => '',
+            'cgr_api_provider'      => 'google_new', 
+            'cgr_api_key'           => '', 
+            'cgr_place_id'          => '', 
+            'cgr_outscraper_key'    => '',
+            'cgr_apify_token'       => '',
+            'cgr_maps_url'          => '',
             
-            'cgr_sync_freq' => 86400, 'cgr_layout' => 'minimal_slider',
-            'cgr_nav_type' => 'dots', 'cgr_grid_columns' => '3', 'cgr_min_rating' => 4, 'cgr_review_limit' => 5,
-            'cgr_autoplay_speed' => 6000, 'cgr_sort_order' => 'highest', 'cgr_excerpt_length' => 160,
-            'cgr_show_avatars' => 1, 'cgr_show_date' => 1, 'cgr_show_badge' => 1, 'cgr_show_google_logo' => 1,
-            'cgr_hide_blank_reviews' => 1,
+            'cgr_sync_freq'         => 86400, 
+            'cgr_layout'            => 'minimal_slider',
+            'cgr_nav_type'          => 'dots', 
+            'cgr_grid_columns'      => '3', 
+            'cgr_min_rating'        => 4, 
+            'cgr_review_limit'      => 5,
+            'cgr_autoplay_speed'    => 6000, 
+            'cgr_sort_order'        => 'highest', 
+            'cgr_excerpt_length'    => 160,
+            'cgr_readmore_action'   => 'modal',
+            'cgr_modal_bg'          => '#112837',
+            'cgr_modal_text_color'  => '#ffffff',
+            'cgr_modal_radius'      => '12',
+            'cgr_show_avatars'      => 1, 
+            'cgr_show_date'         => 1, 
+            'cgr_show_badge'        => 1, 
+            'cgr_show_google_logo'  => 1,
+            'cgr_hide_blank_reviews'=> 1,
             
-            'cgr_section_bg' => 'transparent', 'cgr_bg_color' => '#ffffff', 'cgr_quote_color' => '#333333',
-            'cgr_name_color' => '#333333', 'cgr_star_color' => '#F2B01E', 'cgr_dot_color' => '#91C13D',
-            'cgr_readmore_color' => '#91C13D', 'cgr_badge_color' => '#91C13D', 
+            'cgr_section_bg'        => 'transparent', 
+            'cgr_bg_color'          => '#ffffff', 
+            'cgr_quote_color'       => '#333333',
+            'cgr_name_color'        => '#333333', 
+            'cgr_star_color'        => '#F2B01E', 
+            'cgr_dot_color'         => '#91C13D',
+            'cgr_readmore_color'    => '#91C13D', 
+            'cgr_badge_color'       => '#91C13D', 
             
-            'cgr_quote_size' => '16', 'cgr_quote_weight' => '400',
-            'cgr_name_size' => '16', 'cgr_name_weight' => '700',
-            'cgr_star_size' => '24', 
-            'cgr_badge_size' => '11', 'cgr_badge_weight' => '600',
-            'cgr_watermark_color' => '#333333', 'cgr_watermark_size' => '12', 'cgr_watermark_weight' => '400',
+            'cgr_quote_size'        => '16', 
+            'cgr_quote_weight'      => '400',
+            'cgr_name_size'         => '16', 
+            'cgr_name_weight'       => '700',
+            'cgr_star_size'         => '24', 
+            'cgr_badge_size'        => '11', 
+            'cgr_badge_weight'      => '600',
+            'cgr_watermark_color'   => '#333333', 
+            'cgr_watermark_size'    => '12', 
+            'cgr_watermark_weight'  => '400',
             
-            'cgr_card_padding' => '40', 'cgr_card_radius' => '12'
+            'cgr_card_padding'      => '40', 
+            'cgr_card_radius'       => '12'
         );
         foreach ($settings as $key => $default) {
             register_setting( 'cgr_settings', $key, array('default' => $default) );
@@ -111,11 +135,11 @@ class CGR_Admin {
                 $time   = current_time('timestamp');
 
                 $wpdb->insert( $table_name, array(
-                    'author_name' => $author,
+                    'author_name'       => $author,
                     'profile_photo_url' => $photo,
-                    'rating' => $rating,
-                    'review_text' => $text,
-                    'review_time' => $time
+                    'rating'            => $rating,
+                    'review_text'       => $text,
+                    'review_time'       => $time
                 ), array( '%s', '%s', '%d', '%s', '%d' ) );
 
                 add_settings_error( 'cgr_messages', 'cgr_manual_success', __( 'Manual review added successfully to your database!', 'custom-google-reviews' ), 'updated' );
@@ -144,6 +168,10 @@ class CGR_Admin {
 
             $url = sprintf( 'https://maps.googleapis.com/maps/api/place/details/json?place_id=%s&fields=reviews&reviews_sort=newest&key=%s', urlencode( $place_id ), urlencode( $api_key ) );
             $response = wp_remote_get( $url, array( 'timeout' => 10 ) );
+            if ( is_wp_error( $response ) ) {
+                add_settings_error( 'cgr_messages', 'cgr_sync_fail', 'WP Error: ' . $response->get_error_message(), 'error' );
+                return false;
+            }
             $data = json_decode( wp_remote_retrieve_body( $response ), true );
 
             if ( isset( $data['error_message'] ) ) {
@@ -183,6 +211,11 @@ class CGR_Admin {
                 'headers' => array( 'X-Goog-Api-Key' => $api_key, 'X-Goog-FieldMask' => 'reviews' ) 
             ) );
 
+            if ( is_wp_error( $response ) ) {
+                add_settings_error( 'cgr_messages', 'cgr_sync_fail', 'WP Error: ' . $response->get_error_message(), 'error' );
+                return false;
+            }
+
             $data = json_decode( wp_remote_retrieve_body( $response ), true );
 
             if ( isset( $data['error'] ) ) {
@@ -218,6 +251,10 @@ class CGR_Admin {
 
             $url = 'https://api.app.outscraper.com/google-maps-reviews?query=' . urlencode($maps_url) . '&reviewsLimit=10&sort=newest';
             $response = wp_remote_get( $url, array( 'headers' => array('X-API-KEY' => $api_key), 'timeout' => 45 ) );
+            if ( is_wp_error( $response ) ) {
+                add_settings_error( 'cgr_messages', 'cgr_sync_fail', 'WP Error: ' . $response->get_error_message(), 'error' );
+                return false;
+            }
             $data = json_decode( wp_remote_retrieve_body( $response ), true );
 
             if ( isset( $data['data'][0]['reviews_data'] ) && is_array( $data['data'][0]['reviews_data'] ) ) {
@@ -254,6 +291,11 @@ class CGR_Admin {
                 'body'    => $payload,
                 'timeout' => 60 
             ));
+
+            if ( is_wp_error( $response ) ) {
+                add_settings_error( 'cgr_messages', 'cgr_sync_fail', 'WP Error: ' . $response->get_error_message(), 'error' );
+                return false;
+            }
             
             $data = json_decode( wp_remote_retrieve_body( $response ), true );
 
@@ -312,6 +354,7 @@ class CGR_Admin {
         $min_rating     = (int) get_option('cgr_min_rating', 4);
         $sort_order     = get_option('cgr_sort_order', 'highest');
         $review_limit   = (int) get_option('cgr_review_limit', 5);
+        $excerpt_length = (int) get_option('cgr_excerpt_length', 160);
         $hide_blank     = filter_var(get_option('cgr_hide_blank_reviews', 1), FILTER_VALIDATE_BOOLEAN);
 
         // Pre-filter database items for the admin table based on the 'hide blank' option
@@ -334,7 +377,7 @@ class CGR_Admin {
                 } 
             }
             if ( $sort_order === 'highest' ) { usort( $filtered_reviews, function($a, $b) { return ( (int)$b['rating'] <=> (int)$a['rating'] ); }); } 
-            elseif ( $sort_order === 'newest' ) { usort( $filtered_reviews, function($a, $b) { return ( (int)$b['review_time'] <=> (int)$a['time'] ); }); } 
+            elseif ( $sort_order === 'newest' ) { usort( $filtered_reviews, function($a, $b) { return ( (int)$b['review_time'] <=> (int)$a['review_time'] ); }); } 
             elseif ( $sort_order === 'random' ) { shuffle( $filtered_reviews ); }
         }
         $preview_data = array_slice( $filtered_reviews, 0, $review_limit );
@@ -548,7 +591,17 @@ class CGR_Admin {
                         </tr>
                         <tr class="cgr-row cgr-all">
                             <th scope="row"><?php esc_html_e( '"Read More" Character Cutoff', 'custom-google-reviews' ); ?></th>
-                            <td><input type="number" name="cgr_excerpt_length" id="cgr_excerpt_length" value="<?php echo esc_attr(get_option('cgr_excerpt_length', 160)); ?>" class="cgr-input-small" /> characters</td>
+                            <td><input type="number" name="cgr_excerpt_length" id="cgr_excerpt_length" value="<?php echo esc_attr(get_option('cgr_excerpt_length', 160)); ?>" min="1" class="cgr-input-small" /> characters</td>
+                        </tr>
+                        <tr class="cgr-row cgr-all">
+                            <th scope="row"><?php esc_html_e( '"Read More" Click Behavior', 'custom-google-reviews' ); ?></th>
+                            <td>
+                                <select name="cgr_readmore_action" id="cgr_readmore_action">
+                                    <option value="modal" <?php selected( get_option('cgr_readmore_action', 'modal'), 'modal' ); ?>><?php esc_html_e( 'Open Popup Modal (Best UX - No Stretching)', 'custom-google-reviews' ); ?></option>
+                                    <option value="scroll" <?php selected( get_option('cgr_readmore_action'), 'scroll' ); ?>><?php esc_html_e( 'Scrollable Box inside Card', 'custom-google-reviews' ); ?></option>
+                                    <option value="inline" <?php selected( get_option('cgr_readmore_action'), 'inline' ); ?>><?php esc_html_e( 'Expand Inline (Stretches Section)', 'custom-google-reviews' ); ?></option>
+                                </select>
+                            </td>
                         </tr>
                         <tr class="cgr-row cgr-all">
                             <th scope="row"><?php esc_html_e( 'Hide Blank Reviews', 'custom-google-reviews' ); ?></th>
@@ -689,6 +742,14 @@ class CGR_Admin {
                             <th scope="row"><?php esc_html_e( '"Read More" Link Color', 'custom-google-reviews' ); ?></th>
                             <td><input type="color" name="cgr_readmore_color" id="cgr_readmore_color" value="<?php echo esc_attr(get_option('cgr_readmore_color', '#91C13D')); ?>" /></td>
                         </tr>
+                        <tr class="cgr-row cgr-all" id="cgr-modal-style-row">
+                            <th scope="row"><?php esc_html_e( 'Popup Modal Styling', 'custom-google-reviews' ); ?></th>
+                            <td>
+                                <label>Background Color: <input type="color" name="cgr_modal_bg" id="cgr_modal_bg" value="<?php echo esc_attr(get_option('cgr_modal_bg', '#112837')); ?>" /></label>
+                                <label>Text Color: <input type="color" name="cgr_modal_text_color" id="cgr_modal_text_color" value="<?php echo esc_attr(get_option('cgr_modal_text_color', '#ffffff')); ?>" /></label>
+                                <label>Corner Radius: <input type="number" name="cgr_modal_radius" id="cgr_modal_radius" value="<?php echo esc_attr(get_option('cgr_modal_radius', 12)); ?>" class="cgr-input-small" /> px</label>
+                            </td>
+                        </tr>
                         <tr class="cgr-row cgr-card_slider cgr-static_grid">
                             <th scope="row"><?php esc_html_e( 'Card Padding (px)', 'custom-google-reviews' ); ?></th>
                             <td><input type="number" name="cgr_card_padding" id="cgr_card_padding" value="<?php echo esc_attr(get_option('cgr_card_padding', 40)); ?>" class="cgr-input-small" /> px</td>
@@ -706,7 +767,7 @@ class CGR_Admin {
             </form>
             
             <!-- Real-Time Live Preview Engine -->
-            <div class="cgr-panel cgr-preview-panel">
+            <div class="cgr-panel cgr-preview-panel" id="preview-section-wrapper">
                 <div class="cgr-preview-header">
                     <h3><span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'Real-Time Live Engine Preview', 'custom-google-reviews' ); ?></h3>
                     <span>(Showing exactly how your filtered frontend will look. Save settings to refresh data.)</span>
@@ -720,7 +781,16 @@ class CGR_Admin {
                                 echo '<p class="cgr-preview-empty">No reviews match your current filter settings.</p>';
                             } else {
                                 $index = 1;
-                                foreach($preview_data as $rev) : ?>
+                                foreach($preview_data as $rev) : 
+                                    $raw_text = trim($rev['review_text']);
+                                    $text_len = function_exists('mb_strlen') ? mb_strlen($raw_text) : strlen($raw_text);
+                                    if ($excerpt_length > 0 && $text_len > $excerpt_length) {
+                                        $short_slice = function_exists('mb_substr') ? mb_substr($raw_text, 0, $excerpt_length) : substr($raw_text, 0, $excerpt_length);
+                                        $preview_quote = rtrim($short_slice) . '...';
+                                    } else {
+                                        $preview_quote = $raw_text;
+                                    }
+                                ?>
                                     <div class="cgr-preview-node-item" id="preview-item-<?php echo $index; ?>">
                                         <div class="cgr-card-node" id="preview-card-<?php echo $index; ?>">
                                             <div class="cgr-author-profile">
@@ -738,7 +808,7 @@ class CGR_Admin {
                                             
                                             <div class="cgr-stars"><?php for($i=0; $i<5; $i++){ echo ($i < (int)$rev['rating']) ? '★' : '☆'; } ?></div>
                                             
-                                            <p class="cgr-quote">"<?php echo esc_html(wp_trim_words($rev['review_text'], 25)); ?>"</p>
+                                            <p class="cgr-quote" data-raw-text="<?php echo esc_attr($raw_text); ?>">"<?php echo esc_html($preview_quote); ?>"</p>
                                             <a class="cgr-read-more-trigger"><?php esc_html_e( 'Read More', 'custom-google-reviews' ); ?></a>
                                             
                                             <div class="cgr-preview-google-logo">Google Review</div>
