@@ -1,7 +1,6 @@
 (function() {
     "use strict";
 
-    // 1. Ensure Modal Exists in DOM safely
     function ensureModalExists() {
         var modal = document.getElementById('cgr-review-modal');
         if (!modal) {
@@ -12,12 +11,12 @@
                         '<div class="cgr-modal-author-profile" style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">' +
                             '<img id="cgr-modal-avatar" src="" class="cgr-avatar-img" style="display:none; width:45px; height:45px; border-radius:50%; object-fit:cover;" alt="">' +
                             '<div>' +
-                                '<h4 id="cgr-modal-name" style="margin:0; color:#fff; font-size:17px; font-weight:700;"></h4>' +
-                                '<div id="cgr-modal-date" style="font-size:12px; color:#fff; opacity:0.65; margin-top:2px;"></div>' +
+                                '<h4 id="cgr-modal-name" style="margin:0; font-size:17px; font-weight:700;"></h4>' +
+                                '<div id="cgr-modal-date" style="font-size:12px; opacity:0.65; margin-top:2px;"></div>' +
                             '</div>' +
                         '</div>' +
                         '<div id="cgr-modal-stars" style="color:#F2B01E; font-size:20px; margin-bottom:12px;"></div>' +
-                        '<p id="cgr-modal-text" class="cgr-modal-quote" style="font-style:italic; line-height:1.7; margin:15px 0 0 0; font-size:16px; color:#ffffff;"></p>' +
+                        '<p id="cgr-modal-text" class="cgr-modal-quote" style="font-style:italic; line-height:1.7; margin:15px 0 0 0; font-size:16px;"></p>' +
                     '</div>' +
                 '</div>';
             document.body.insertAdjacentHTML('beforeend', modalHTML);
@@ -38,7 +37,6 @@
         return modal;
     }
 
-    // 2. Global Event Delegation for Read More (Works even if script loads late)
     function handleReadMoreClick(e) {
         var btn = e.target.closest('.cgr-read-more-trigger');
         if (!btn) return;
@@ -47,18 +45,21 @@
         e.stopPropagation();
 
         var container = btn.closest('.cgr-pro-container');
-        var card      = btn.closest('.cgr-card-node');
+        var card = btn.closest('.cgr-card-node');
         if (!card) return;
 
-        var action   = container ? (container.getAttribute('data-readmore-action') || 'modal') : 'modal';
+        var clickAction = container ? (container.getAttribute('data-readmore-action') || 'modal') : 'modal';
+        var isInlinePosition = btn.classList.contains('cgr-inline-trigger');
         var targetEl = card.querySelector('.cgr-quote');
+        
         if (!targetEl) return;
 
-        var fullText  = targetEl.getAttribute('data-full-text') || targetEl.textContent;
-        var shortText = targetEl.getAttribute('data-short-text') || targetEl.textContent;
+        var fullText  = targetEl.getAttribute('data-full-text') || '';
+        var shortText = targetEl.getAttribute('data-short-text') || '';
 
-        if (action === 'modal') {
-            var modal      = ensureModalExists();
+        // Action 1: Popup Modal
+        if (clickAction === 'modal') {
+            var modal = ensureModalExists();
             var authorName = card.getAttribute('data-author') || '';
             var reviewDate = card.getAttribute('data-date') || '';
             var avatarSrc  = card.getAttribute('data-avatar') || '';
@@ -106,37 +107,56 @@
                 window.cgrSwiperInstance.autoplay.stop();
             }
         } 
-        else if (action === 'scroll') {
+        
+        // Action 2: Scrollable Box
+        else if (clickAction === 'scroll') {
             if (targetEl.classList.contains('cgr-scrollable-box')) {
                 targetEl.classList.remove('cgr-scrollable-box');
-                targetEl.textContent = shortText;
-                btn.textContent = btn.getAttribute('data-more') || 'Read More';
+                
+                if (isInlinePosition) {
+                    targetEl.innerHTML = '"' + shortText + ' <a class="cgr-read-more-trigger cgr-inline-trigger">Read More</a>"';
+                } else {
+                    targetEl.innerHTML = '"' + shortText + '..."';
+                    btn.textContent = 'Read More';
+                }
             } else {
                 targetEl.classList.add('cgr-scrollable-box');
-                targetEl.textContent = fullText;
-                btn.textContent = btn.getAttribute('data-less') || 'Read Less';
+                
+                if (isInlinePosition) {
+                    targetEl.innerHTML = '"' + fullText + ' <a class="cgr-read-more-trigger cgr-inline-trigger">Read Less</a>"';
+                } else {
+                    targetEl.innerHTML = '"' + fullText + '"';
+                    btn.textContent = 'Read Less';
+                }
             }
-            if (typeof window.cgrSwiperInstance !== 'undefined') {
-                window.cgrSwiperInstance.updateAutoHeight(200);
-            }
+            if (typeof window.cgrSwiperInstance !== 'undefined') window.cgrSwiperInstance.updateAutoHeight(200);
         } 
+        
+        // Action 3: Expand Inline Stretching
         else {
             if (targetEl.classList.contains('cgr-expanded')) {
                 targetEl.classList.remove('cgr-expanded');
-                targetEl.textContent = shortText;
-                btn.textContent = btn.getAttribute('data-more') || 'Read More';
+                
+                if (isInlinePosition) {
+                    targetEl.innerHTML = '"' + shortText + ' <a class="cgr-read-more-trigger cgr-inline-trigger">Read More</a>"';
+                } else {
+                    targetEl.innerHTML = '"' + shortText + '..."';
+                    btn.textContent = 'Read More';
+                }
             } else {
                 targetEl.classList.add('cgr-expanded');
-                targetEl.textContent = fullText;
-                btn.textContent = btn.getAttribute('data-less') || 'Read Less';
+                
+                if (isInlinePosition) {
+                    targetEl.innerHTML = '"' + fullText + ' <a class="cgr-read-more-trigger cgr-inline-trigger">Read Less</a>"';
+                } else {
+                    targetEl.innerHTML = '"' + fullText + '"';
+                    btn.textContent = 'Read Less';
+                }
             }
-            if (typeof window.cgrSwiperInstance !== 'undefined') {
-                window.cgrSwiperInstance.updateAutoHeight(200);
-            }
+            if (typeof window.cgrSwiperInstance !== 'undefined') window.cgrSwiperInstance.updateAutoHeight(200);
         }
     }
 
-    // 3. Safe Swiper Initializer
     function initSwiperSliders() {
         if (typeof Swiper === 'undefined') return;
 
@@ -188,16 +208,13 @@
         });
     }
 
-    // 4. Execution controller that works regardless of deferral state
     function bootPlugin() {
         ensureModalExists();
         initSwiperSliders();
     }
 
-    // Always listen for user interaction clicks globally
     document.addEventListener('click', handleReadMoreClick);
 
-    // Check document ready state immediately (handles delayed/deferred scripts gracefully)
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
         bootPlugin();
     } else {

@@ -10,22 +10,19 @@ document.addEventListener("DOMContentLoaded", function() {
 
         document.querySelectorAll('.cgr-row').forEach(row => {
             if (row.classList.contains('cgr-all') || row.classList.contains('cgr-' + checkedLayout)) {
-                row.style.display = 'table-row';
+                row.style.display = 'flex';
             } else {
                 row.style.display = 'none';
             }
         });
 
-        toggleModalStyleRow();
-        updateLivePreview();
-    }
-
-    function toggleModalStyleRow() {
         const actionSelect = document.getElementById('cgr_readmore_action');
         const modalRow = document.getElementById('cgr-modal-style-row');
         if (actionSelect && modalRow) {
-            modalRow.style.display = (actionSelect.value === 'modal') ? 'table-row' : 'none';
+            modalRow.style.display = (actionSelect.value === 'modal') ? 'flex' : 'none';
         }
+
+        updateLivePreview();
     }
 
     function hexToRgba(hex, opacity) {
@@ -49,8 +46,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function updateLivePreview() {
-        toggleModalStyleRow();
-
         const layoutInput = document.querySelector('input[name="cgr_layout"]:checked');
         if (!layoutInput) return;
         const layout = layoutInput.value;
@@ -58,30 +53,37 @@ document.addEventListener("DOMContentLoaded", function() {
         const navType = getVal('cgr_nav_type', 'dots');
         const gridCols = parseInt(getVal('cgr_grid_columns', '3'));
         const excerptLen = parseInt(getVal('cgr_excerpt_length', '160')) || 160;
+        const readMorePosition = getVal('cgr_readmore_position', 'below');
         
         const sectionBg = getVal('cgr_section_bg', 'transparent');
         const bgColor = getVal('cgr_bg_color', '#ffffff');
+        
         const starColor = getVal('cgr_star_color', '#F2B01E');
+        const starSize = getVal('cgr_star_size', '24') + 'px';
+        
         const quoteColor = getVal('cgr_quote_color', '#333333');
+        const quoteSize = getVal('cgr_quote_size', '18') + 'px';
+        const quoteWeight = getVal('cgr_quote_weight', '300');
+        
         const nameColor = getVal('cgr_name_color', '#333333');
-        const dotColor = getVal('cgr_dot_color', '#91C13D');
-        const readMoreColor = getVal('cgr_readmore_color', '#91C13D');
-        const badgeColor = getVal('cgr_badge_color', '#91C13D');
-        const watermarkColor = getVal('cgr_watermark_color', '#333333');
-        
-        const quoteSize = getVal('cgr_quote_size', '16') + 'px';
-        const quoteWeight = getVal('cgr_quote_weight', '400');
-        
         const nameSize = getVal('cgr_name_size', '16') + 'px';
         const nameWeight = getVal('cgr_name_weight', '700');
         
-        const starSize = getVal('cgr_star_size', '24') + 'px';
-        
+        const badgeColor = getVal('cgr_badge_color', '#91C13D');
         const badgeSize = getVal('cgr_badge_size', '11') + 'px';
         const badgeWeight = getVal('cgr_badge_weight', '600');
         
-        const watermarkSize = getVal('cgr_watermark_size', '12') + 'px';
-        const watermarkWeight = getVal('cgr_watermark_weight', '400');
+        const watermarkColor = getVal('cgr_watermark_color', '#333333');
+        const watermarkSize = getVal('cgr_watermark_size', '18') + 'px';
+        const watermarkWeight = getVal('cgr_watermark_weight', '300');
+        
+        const readMoreColor = getVal('cgr_readmore_color', '#91C13D');
+        const readMoreSize = getVal('cgr_readmore_size', '14') + 'px';
+        const readMoreWeight = getVal('cgr_readmore_weight', '600');
+        
+        const dotColor = getVal('cgr_dot_color', '#91C13D');
+        const arrowSize = getVal('cgr_arrow_size', '20') + 'px';
+        const dotSizePx = getVal('cgr_dot_size', '8') + 'px';
         
         const padding = getVal('cgr_card_padding', '40') + 'px';
         const radius = getVal('cgr_card_radius', '12') + 'px';
@@ -127,20 +129,37 @@ document.addEventListener("DOMContentLoaded", function() {
             const header = card.querySelector('.cgr-author-profile');
             const stars = card.querySelector('.cgr-stars');
             const quote = card.querySelector('.cgr-quote');
-            const readMore = card.querySelector('.cgr-read-more-trigger');
             const badge = card.querySelector('.cgr-verified-badge');
             const googleLogo = card.querySelector('.cgr-preview-google-logo');
             const authorName = card.querySelector('.cgr-preview-author-name');
 
-            // Apply live character cutoff in preview
             if (quote) {
+                let existingTrigger = card.querySelector('.cgr-read-more-trigger');
+                if (existingTrigger) existingTrigger.remove();
+
                 const rawText = quote.getAttribute('data-raw-text') || '';
+                
                 if (rawText.length > excerptLen) {
-                    quote.textContent = '"' + rawText.substring(0, excerptLen).trim() + '..."';
-                    if (readMore) readMore.style.display = 'inline-block';
+                    const shortText = rawText.substring(0, excerptLen).trim();
+                    if (readMorePosition === 'inline') {
+                        quote.innerHTML = `"${shortText} <a class='cgr-read-more-trigger cgr-inline-trigger' style='display:inline; margin-left:5px; color:${readMoreColor}; font-size:${readMoreSize}; font-weight:${readMoreWeight}; cursor:pointer;'>Read More</a>"`;
+                    } else {
+                        quote.innerHTML = `"${shortText}..."`;
+                        let trigger = document.createElement('a');
+                        trigger.className = 'cgr-read-more-trigger';
+                        trigger.style.display = 'block';
+                        trigger.style.marginTop = '-5px';
+                        trigger.style.marginBottom = '15px';
+                        trigger.style.color = readMoreColor;
+                        trigger.style.fontSize = readMoreSize;
+                        trigger.style.fontWeight = readMoreWeight;
+                        trigger.style.cursor = 'pointer';
+                        trigger.style.textAlign = layout === 'minimal_slider' ? 'center' : 'left';
+                        trigger.textContent = 'Read More';
+                        quote.parentNode.insertBefore(trigger, quote.nextSibling);
+                    }
                 } else {
-                    quote.textContent = '"' + rawText + '"';
-                    if (readMore) readMore.style.display = 'none';
+                    quote.innerHTML = `"${rawText}"`;
                 }
             }
 
@@ -150,8 +169,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 card.style.boxShadow = 'none';
                 
                 card.appendChild(stars);
+                stars.style.textAlign = 'center';
+
                 card.appendChild(quote);
-                if(readMore) card.appendChild(readMore);
+                quote.style.textAlign = 'center';
+                
+                const triggerBelow = card.querySelector('.cgr-read-more-trigger');
+                if(triggerBelow && readMorePosition === 'below') card.appendChild(triggerBelow);
                 
                 header.style.display = 'block';
                 header.style.textAlign = 'center';
@@ -163,13 +187,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 if(googleLogo) {
                     card.appendChild(googleLogo);
                     googleLogo.style.textAlign = 'center';
-                    googleLogo.style.marginTop = '2px';
-                    googleLogo.innerHTML = 'Google Review';
+                    googleLogo.style.marginTop = '5px';
                 }
 
                 if(badge) {
                     card.appendChild(badge);
-                    badge.style.margin = '10px auto 0 auto';
+                    badge.style.margin = '15px auto 0 auto';
                 }
             } else {
                 card.style.background = bgColor;
@@ -182,10 +205,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 header.style.marginTop = '0px';
                 authorName.style.display = 'inline';
                 authorName.style.textAlign = 'left';
+                
                 card.insertBefore(header, card.firstChild);
                 card.insertBefore(stars, header.nextSibling);
+                stars.style.textAlign = 'left';
+
                 card.insertBefore(quote, stars.nextSibling);
-                if(readMore) card.insertBefore(readMore, quote.nextSibling);
+                quote.style.textAlign = 'left';
+
+                const triggerBelow = card.querySelector('.cgr-read-more-trigger');
+                if(triggerBelow && readMorePosition === 'below') card.insertBefore(triggerBelow, quote.nextSibling);
                 
                 if(badge) {
                     card.appendChild(badge);
@@ -194,6 +223,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if(googleLogo) {
                     header.querySelector('.cgr-author-title').appendChild(googleLogo);
                     googleLogo.style.textAlign = 'left';
+                    googleLogo.style.marginTop = '2px';
                 }
             }
         });
@@ -202,7 +232,6 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelectorAll('.cgr-quote').forEach(el => { el.style.color = quoteColor; el.style.fontSize = quoteSize; el.style.fontWeight = quoteWeight; });
         document.querySelectorAll('.cgr-author-title, .cgr-preview-author-name').forEach(el => { el.style.color = nameColor; el.style.fontSize = nameSize; el.style.fontWeight = nameWeight; });
         document.querySelectorAll('.cgr-preview-google-logo').forEach(el => { el.style.color = watermarkColor; el.style.fontSize = watermarkSize; el.style.fontWeight = watermarkWeight; });
-        document.querySelectorAll('.cgr-read-more-trigger').forEach(el => el.style.color = readMoreColor);
         
         document.querySelectorAll('.cgr-verified-badge').forEach(el => {
             el.style.color = badgeColor;
@@ -215,18 +244,30 @@ document.addEventListener("DOMContentLoaded", function() {
         const arrowRight = document.getElementById('preview-arrow-right');
         const dotsContainer = document.getElementById('preview-dots-container');
 
-        if (arrowLeft) { arrowLeft.style.color = dotColor; arrowLeft.style.display = (navType === 'arrows' || navType === 'both') && layout !== 'static_grid' ? 'block' : 'none'; }
-        if (arrowRight) { arrowRight.style.color = dotColor; arrowRight.style.display = (navType === 'arrows' || navType === 'both') && layout !== 'static_grid' ? 'block' : 'none'; }
-        if (dotsContainer) { dotsContainer.style.display = (navType === 'dots' || navType === 'both') && layout !== 'static_grid' ? 'block' : 'none'; }
+        if (arrowLeft) { 
+            arrowLeft.style.color = dotColor; 
+            arrowLeft.style.fontSize = arrowSize;
+            arrowLeft.style.display = (navType === 'arrows' || navType === 'both') && layout !== 'static_grid' ? 'block' : 'none'; 
+        }
+        if (arrowRight) { 
+            arrowRight.style.color = dotColor; 
+            arrowRight.style.fontSize = arrowSize;
+            arrowRight.style.display = (navType === 'arrows' || navType === 'both') && layout !== 'static_grid' ? 'block' : 'none'; 
+        }
+        if (dotsContainer) { 
+            dotsContainer.style.display = (navType === 'dots' || navType === 'both') && layout !== 'static_grid' ? 'block' : 'none'; 
+        }
         
         document.querySelectorAll('.preview-dot').forEach((el, i) => { 
             el.style.borderColor = dotColor; 
-            el.style.backgroundColor = (i === 0) ? dotColor : 'transparent'; 
+            el.style.backgroundColor = (i === 0) ? dotColor : 'transparent';
+            el.style.width = dotSizePx;
+            el.style.height = dotSizePx;
         });
     }
 
-    document.querySelectorAll('input[name="cgr_layout"]').forEach(radio => {
-        radio.addEventListener('change', toggleUIRows);
+    document.querySelectorAll('input[name="cgr_layout"], select#cgr_readmore_action').forEach(el => {
+        el.addEventListener('change', toggleUIRows);
     });
 
     const previewTriggers = [ 
@@ -234,10 +275,10 @@ document.addEventListener("DOMContentLoaded", function() {
         'cgr_name_color', 'cgr_dot_color', 'cgr_readmore_color', 'cgr_badge_color', 'cgr_watermark_color',
         'cgr_quote_size', 'cgr_name_size', 'cgr_star_size', 'cgr_badge_size', 'cgr_watermark_size',
         'cgr_quote_weight', 'cgr_name_weight', 'cgr_badge_weight', 'cgr_watermark_weight',
-        'cgr_card_padding', 'cgr_card_radius', 'cgr_nav_type', 
+        'cgr_card_padding', 'cgr_card_radius', 'cgr_nav_type', 'cgr_arrow_size', 'cgr_dot_size',
         'cgr_grid_columns', 'cgr_show_avatars', 'cgr_show_date', 'cgr_show_badge', 
-        'cgr_show_google_logo', 'cgr_excerpt_length', 'cgr_readmore_action',
-        'cgr_modal_bg', 'cgr_modal_text_color', 'cgr_modal_radius'
+        'cgr_show_google_logo', 'cgr_excerpt_length', 'cgr_readmore_position', 'cgr_readmore_action',
+        'cgr_readmore_size', 'cgr_readmore_weight'
     ];
     previewTriggers.forEach(id => {
         const el = document.getElementById(id);
