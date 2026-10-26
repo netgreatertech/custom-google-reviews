@@ -52,7 +52,9 @@ document.addEventListener("DOMContentLoaded", function() {
         
         const navType = getVal('cgr_nav_type', 'dots');
         const gridCols = parseInt(getVal('cgr_grid_columns', '3'));
-        const excerptLen = parseInt(getVal('cgr_excerpt_length', '160')) || 160;
+        
+        const excerptLen = parseInt(getVal('cgr_excerpt_length', '30')) || 30; // Truncate by Word
+        
         const readMorePosition = getVal('cgr_readmore_position', 'below');
         
         const sectionBg = getVal('cgr_section_bg', 'transparent');
@@ -138,9 +140,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (existingTrigger) existingTrigger.remove();
 
                 const rawText = quote.getAttribute('data-raw-text') || '';
+                const words = rawText.trim() ? rawText.trim().split(/\s+/) : [];
                 
-                if (rawText.length > excerptLen) {
-                    const shortText = rawText.substring(0, excerptLen).trim();
+                if (words.length > excerptLen) {
+                    const shortText = words.slice(0, excerptLen).join(" ");
+                    
                     if (readMorePosition === 'inline') {
                         quote.innerHTML = `"${shortText} <a class='cgr-read-more-trigger cgr-inline-trigger' style='display:inline; margin-left:5px; color:${readMoreColor}; font-size:${readMoreSize}; font-weight:${readMoreWeight}; cursor:pointer;'>Read More</a>"`;
                     } else {
@@ -278,7 +282,7 @@ document.addEventListener("DOMContentLoaded", function() {
         'cgr_card_padding', 'cgr_card_radius', 'cgr_nav_type', 'cgr_arrow_size', 'cgr_dot_size',
         'cgr_grid_columns', 'cgr_show_avatars', 'cgr_show_date', 'cgr_show_badge', 
         'cgr_show_google_logo', 'cgr_excerpt_length', 'cgr_readmore_position', 'cgr_readmore_action',
-        'cgr_readmore_size', 'cgr_readmore_weight'
+        'cgr_readmore_size', 'cgr_readmore_weight', 'cgr_min_char_length'
     ];
     previewTriggers.forEach(id => {
         const el = document.getElementById(id);

@@ -42,8 +42,8 @@ class CGR_Frontend {
             'min_rating'       => get_option( 'cgr_min_rating', 4 ),
             'limit'            => get_option( 'cgr_review_limit', 5 ),
             'sort_order'       => get_option( 'cgr_sort_order', 'highest' ),
-            'excerpt_length'   => get_option( 'cgr_excerpt_length', 160 ),
-            'min_char_length'  => get_option( 'cgr_min_char_length', 0 ),
+            'excerpt_length'   => get_option( 'cgr_excerpt_length', 30 ), // Defaults to 30 Words
+            'min_char_length'  => get_option( 'cgr_min_char_length', 0 ), // Serves as Min Words
             
             'readmore_action'  => get_option( 'cgr_readmore_action', 'modal' ),
             'readmore_position'=> get_option( 'cgr_readmore_position', 'below' ),
@@ -104,7 +104,7 @@ class CGR_Frontend {
         $review_limit     = (int) $atts['limit'];
         $sort_order       = esc_attr( $atts['sort_order'] );
         $excerpt_length   = (int) $atts['excerpt_length'];
-        $min_chars        = (int) $atts['min_char_length'];
+        $min_words        = (int) $atts['min_char_length'];
         
         $readmore_action  = esc_attr( $atts['readmore_action'] );
         $readmore_position= esc_attr( $atts['readmore_position'] );
@@ -114,12 +114,11 @@ class CGR_Frontend {
         
         $speed            = (int) $atts['speed'];
 
-        // Robust Boolean Evaluation Check
-        $show_avatars     = ( $atts['show_avatars'] == 1 || $atts['show_avatars'] === 'true' || $atts['show_avatars'] === 'yes' || $atts['show_avatars'] === true );
-        $show_date        = ( $atts['show_date'] == 1 || $atts['show_date'] === 'true' || $atts['show_date'] === 'yes' || $atts['show_date'] === true );
-        $show_badge       = ( $atts['show_badge'] == 1 || $atts['show_badge'] === 'true' || $atts['show_badge'] === 'yes' || $atts['show_badge'] === true );
-        $show_google      = ( $atts['show_google'] == 1 || $atts['show_google'] === 'true' || $atts['show_google'] === 'yes' || $atts['show_google'] === true );
-        $hide_blank       = ( $atts['hide_blank'] == 1 || $atts['hide_blank'] === 'true' || $atts['hide_blank'] === 'yes' || $atts['hide_blank'] === true );
+        $show_avatars     = ( !empty($atts['show_avatars']) && $atts['show_avatars'] !== '0' && $atts['show_avatars'] !== 'false' );
+        $show_date        = ( !empty($atts['show_date']) && $atts['show_date'] !== '0' && $atts['show_date'] !== 'false' );
+        $show_badge       = ( !empty($atts['show_badge']) && $atts['show_badge'] !== '0' && $atts['show_badge'] !== 'false' );
+        $show_google      = ( !empty($atts['show_google']) && $atts['show_google'] !== '0' && $atts['show_google'] !== 'false' );
+        $hide_blank       = ( !empty($atts['hide_blank']) && $atts['hide_blank'] !== '0' && $atts['hide_blank'] !== 'false' );
 
         $section_bg       = esc_attr( $atts['section_bg'] );
         $bg_color         = esc_attr( $atts['bg_color'] );
@@ -135,10 +134,13 @@ class CGR_Frontend {
         $filtered_reviews = array();
         foreach ( $raw_reviews as $review ) {
             $rating = isset( $review['rating'] ) ? (int) $review['rating'] : 5;
-            $text_len = function_exists('mb_strlen') ? mb_strlen($review['text']) : strlen($review['text']);
+            $rev_text = trim($review['text']);
             
-            if ( $hide_blank && empty( trim( $review['text'] ) ) ) continue;
-            if ( $text_len < $min_chars ) continue;
+            $words_arr = $rev_text !== '' ? preg_split('/\s+/u', $rev_text, -1, PREG_SPLIT_NO_EMPTY) : array();
+            $word_count = count($words_arr);
+            
+            if ( $hide_blank && empty( $rev_text ) ) continue;
+            if ( $word_count < $min_words ) continue;
 
             if ( $rating >= $min_rating ) {
                 $filtered_reviews[] = $review;
@@ -163,17 +165,17 @@ class CGR_Frontend {
         ob_start();
         ?>
         <div class="cgr-pro-section-wrapper" style="
-            --cgr-section-bg: <?php echo $section_bg; ?>;
-            --cgr-bg-color: <?php echo $bg_color; ?>;
+            --cgr-section-bg: <?php echo esc_attr( $section_bg ); ?>;
+            --cgr-bg-color: <?php echo esc_attr( $bg_color ); ?>;
             
-            --cgr-name-color: <?php echo $name_color; ?>;
+            --cgr-name-color: <?php echo esc_attr( $name_color ); ?>;
             --cgr-name-size: <?php echo (int) $atts['name_size']; ?>px;
             --cgr-name-weight: <?php echo esc_attr( $atts['name_weight'] ); ?>;
             
-            --cgr-star-color: <?php echo $star_color; ?>;
+            --cgr-star-color: <?php echo esc_attr( $star_color ); ?>;
             --cgr-star-size: <?php echo (int) $atts['star_size']; ?>px;
             
-            --cgr-quote-color: <?php echo $quote_color; ?>;
+            --cgr-quote-color: <?php echo esc_attr( $quote_color ); ?>;
             --cgr-quote-size: <?php echo (int) $atts['quote_size']; ?>px;
             --cgr-quote-weight: <?php echo esc_attr( $atts['quote_weight'] ); ?>;
             
@@ -181,18 +183,18 @@ class CGR_Frontend {
             --cgr-readmore-size: <?php echo (int) $atts['readmore_size']; ?>px;
             --cgr-readmore-weight: <?php echo esc_attr( $atts['readmore_weight'] ); ?>;
             
-            --cgr-badge-color: <?php echo $badge_color; ?>;
-            --cgr-badge-bg: <?php echo $badge_bg; ?>;
+            --cgr-badge-color: <?php echo esc_attr( $badge_color ); ?>;
+            --cgr-badge-bg: <?php echo esc_attr( $badge_bg ); ?>;
             --cgr-badge-size: <?php echo (int) $atts['badge_size']; ?>px;
             --cgr-badge-weight: <?php echo esc_attr( $atts['badge_weight'] ); ?>;
             
-            --cgr-dot-color: <?php echo $dot_color; ?>;
+            --cgr-dot-color: <?php echo esc_attr( $dot_color ); ?>;
             --cgr-arrow-size: <?php echo (int) $atts['arrow_size']; ?>px;
             --cgr-dot-size: <?php echo (int) $atts['dot_size']; ?>px;
             
             --cgr-padding: <?php echo (int) $atts['padding']; ?>px;
             --cgr-card-radius: <?php echo (int) $atts['card_radius']; ?>px;
-            --cgr-grid-cols: <?php echo $grid_cols; ?>;
+            --cgr-grid-cols: <?php echo (int) $grid_cols; ?>;
             
             --cgr-watermark-color: <?php echo esc_attr( $atts['watermark_color'] ); ?>;
             --cgr-watermark-size: <?php echo (int) $atts['watermark_size']; ?>px;
@@ -211,27 +213,30 @@ class CGR_Frontend {
                     <div class="<?php echo ($layout !== 'static_grid') ? 'swiper-wrapper' : ''; ?>">
                         <?php foreach ( $reviews as $index => $review ) : 
                             $unique_id = 'cgr-text-' . (int)$index . '-' . wp_rand(1000,9999);
-                            $review_text = isset($review['text']) ? trim($review['text']) : '';
-                            $text_length = function_exists('mb_strlen') ? mb_strlen($review_text) : strlen($review_text);
-                            $is_long = ( $excerpt_length > 0 && $text_length > $excerpt_length );
+                            $raw_text = trim($review['text']);
+                            
+                            $words_arr = $raw_text !== '' ? preg_split('/\s+/u', $raw_text, -1, PREG_SPLIT_NO_EMPTY) : array();
+                            $word_count = count($words_arr);
+                            
+                            $is_long = ( $excerpt_length > 0 && $word_count > $excerpt_length );
                             
                             if ( $is_long ) {
-                                $short_slice = function_exists('mb_substr') ? mb_substr($review_text, 0, $excerpt_length) : substr($review_text, 0, $excerpt_length);
-                                $short_text  = rtrim($short_slice);
+                                $short_slice = implode(' ', array_slice($words_arr, 0, $excerpt_length));
+                                $short_text  = rtrim($short_slice, '.,!?');
                             } else {
-                                $short_text  = $review_text;
+                                $short_text  = $raw_text;
                             }
 
                             $time_ago = isset($review['time']) ? sprintf( esc_html__('%s ago', 'custom-google-reviews'), human_time_diff( $review['time'], current_time('timestamp') ) ) : '';
                             $rating = isset($review['rating']) ? (int) $review['rating'] : 5;
                             $author_name_clean = isset($review['author_name']) ? $review['author_name'] : 'Anonymous';
-                            $avatar_url = !empty($review['profile_photo_url']) ? esc_url($review['profile_photo_url']) : '';
+                            $avatar_url = !empty($review['profile_photo_url']) ? $review['profile_photo_url'] : '';
                         ?>
                             <div class="<?php echo ($layout !== 'static_grid') ? 'swiper-slide' : 'cgr-grid-item'; ?>">
                                 <div class="cgr-card-node"
                                      data-author="<?php echo esc_attr($author_name_clean); ?>"
                                      data-date="<?php echo esc_attr($time_ago); ?>"
-                                     data-avatar="<?php echo ($show_avatars && !empty($avatar_url)) ? $avatar_url : ''; ?>"
+                                     data-avatar="<?php echo ($show_avatars && !empty($avatar_url)) ? esc_url($avatar_url) : ''; ?>"
                                      data-rating="<?php echo esc_attr($rating); ?>">
                                     
                                     <?php if ($layout === 'minimal_slider') : ?>
@@ -239,18 +244,18 @@ class CGR_Frontend {
                                         
                                         <?php if ( $is_long ) : ?>
                                             <?php if ( $readmore_position === 'inline' ) : ?>
-                                                <p class="cgr-quote cgr-inline-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $review_text ); ?>">"<?php echo esc_html( $short_slice ); ?> <a class="cgr-read-more-trigger cgr-inline-trigger">Read More</a>"</p>
+                                                <p class="cgr-quote cgr-inline-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $raw_text ); ?>">"<?php echo esc_html( $short_slice ); ?> <a class="cgr-read-more-trigger cgr-inline-trigger">Read More</a>"</p>
                                             <?php else : ?>
-                                                <p class="cgr-quote cgr-below-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $review_text ); ?>">"<?php echo esc_html( $short_slice ); ?>..."</p>
+                                                <p class="cgr-quote cgr-below-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $raw_text ); ?>">"<?php echo esc_html( $short_slice ); ?>..."</p>
                                                 <a class="cgr-read-more-trigger cgr-below-trigger">Read More</a>
                                             <?php endif; ?>
                                         <?php else : ?>
-                                            <p class="cgr-quote" id="<?php echo esc_attr($unique_id); ?>">"<?php echo esc_html( $review_text ); ?>"</p>
+                                            <p class="cgr-quote" id="<?php echo esc_attr($unique_id); ?>">"<?php echo esc_html( $raw_text ); ?>"</p>
                                         <?php endif; ?>
 
                                         <div class="cgr-profile-header cgr-profile-minimal">
                                             <?php if ( $show_avatars && !empty($avatar_url) ) : ?>
-                                                <img src="<?php echo $avatar_url; ?>" class="cgr-avatar-img" alt="">
+                                                <img src="<?php echo esc_url($avatar_url); ?>" class="cgr-avatar-img" alt="">
                                             <?php endif; ?>
                                             
                                             <div class="cgr-author-title">
@@ -271,7 +276,7 @@ class CGR_Frontend {
                                     <?php else : ?>
                                         <div class="cgr-profile-header cgr-profile-standard">
                                             <?php if ( $show_avatars && !empty($avatar_url) ) : ?>
-                                                <img src="<?php echo $avatar_url; ?>" class="cgr-avatar-img" alt="">
+                                                <img src="<?php echo esc_url($avatar_url); ?>" class="cgr-avatar-img" alt="">
                                             <?php endif; ?>
                                             
                                             <div class="cgr-author-title">
@@ -289,13 +294,13 @@ class CGR_Frontend {
                                         
                                         <?php if ( $is_long ) : ?>
                                             <?php if ( $readmore_position === 'inline' ) : ?>
-                                                <p class="cgr-quote cgr-quote-left cgr-inline-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $review_text ); ?>">"<?php echo esc_html( $short_slice ); ?> <a class="cgr-read-more-trigger cgr-read-more-left cgr-inline-trigger">Read More</a>"</p>
+                                                <p class="cgr-quote cgr-quote-left cgr-inline-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $raw_text ); ?>">"<?php echo esc_html( $short_slice ); ?> <a class="cgr-read-more-trigger cgr-read-more-left cgr-inline-trigger">Read More</a>"</p>
                                             <?php else : ?>
-                                                <p class="cgr-quote cgr-quote-left cgr-below-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $review_text ); ?>">"<?php echo esc_html( $short_slice ); ?>..."</p>
+                                                <p class="cgr-quote cgr-quote-left cgr-below-quote" id="<?php echo esc_attr($unique_id); ?>" data-short-text="<?php echo esc_attr( $short_slice ); ?>" data-full-text="<?php echo esc_attr( $raw_text ); ?>">"<?php echo esc_html( $short_slice ); ?>..."</p>
                                                 <a class="cgr-read-more-trigger cgr-read-more-left cgr-below-trigger">Read More</a>
                                             <?php endif; ?>
                                         <?php else : ?>
-                                            <p class="cgr-quote cgr-quote-left" id="<?php echo esc_attr($unique_id); ?>">"<?php echo esc_html( $review_text ); ?>"</p>
+                                            <p class="cgr-quote cgr-quote-left" id="<?php echo esc_attr($unique_id); ?>">"<?php echo esc_html( $raw_text ); ?>"</p>
                                         <?php endif; ?>
                                         
                                         <?php if ( $show_badge ) : ?>

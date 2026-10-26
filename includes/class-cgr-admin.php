@@ -75,7 +75,7 @@ class CGR_Admin {
             'cgr_min_char_length'   => 0,
             'cgr_autoplay_speed'    => 6000, 
             'cgr_sort_order'        => 'highest', 
-            'cgr_excerpt_length'    => 160,
+            'cgr_excerpt_length'    => 30,
             
             'cgr_readmore_position' => 'below',
             'cgr_readmore_action'   => 'modal',
@@ -122,7 +122,11 @@ class CGR_Admin {
             'cgr_card_radius'       => '12'
         );
         foreach ($settings as $key => $default) {
-            register_setting( 'cgr_settings', $key, array('default' => $default) );
+            $sanitize_callback = ( $key === 'cgr_maps_url' ) ? 'esc_url_raw' : 'sanitize_text_field';
+            register_setting( 'cgr_settings', $key, array(
+                'default'           => $default,
+                'sanitize_callback' => $sanitize_callback
+            ) );
         }
     }
 
@@ -225,7 +229,7 @@ class CGR_Admin {
         // 3. OUTSCRAPER API
         elseif ( $provider === 'outscraper' ) {
             $api_key  = get_option( 'cgr_outscraper_key' );
-            $maps_url = get_option( 'cgr_maps_url' );
+            $maps_url = esc_url_raw( get_option( 'cgr_maps_url' ) );
             if ( empty( $api_key ) || empty( $maps_url ) ) return false;
             $url = 'https://api.app.outscraper.com/google-maps-reviews?query=' . urlencode($maps_url) . '&reviewsLimit=10&sort=newest';
             $response = wp_remote_get( $url, array( 'headers' => array('X-API-KEY' => $api_key), 'timeout' => 45 ) );
@@ -246,7 +250,7 @@ class CGR_Admin {
         // 4. APIFY SCRAPER API
         elseif ( $provider === 'apify' ) {
             $token    = get_option( 'cgr_apify_token' );
-            $maps_url = get_option( 'cgr_maps_url' );
+            $maps_url = esc_url_raw( get_option( 'cgr_maps_url' ) );
             if ( empty( $token ) || empty( $maps_url ) ) return false;
             $url = 'https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token=' . urlencode($token);
             $payload = json_encode( array( 'searchStringsArray' => array( $maps_url ), 'maxReviews' => 10 ) );
@@ -295,8 +299,8 @@ class CGR_Admin {
         $min_rating     = (int) get_option('cgr_min_rating', 4);
         $sort_order     = get_option('cgr_sort_order', 'highest');
         $review_limit   = (int) get_option('cgr_review_limit', 5);
-        $excerpt_length = (int) get_option('cgr_excerpt_length', 160);
-        $min_chars      = (int) get_option('cgr_min_char_length', 0);
+        $excerpt_length = (int) get_option('cgr_excerpt_length', 30); // Default to words
+        $min_words      = (int) get_option('cgr_min_char_length', 0); // Serves as Min Words
         $hide_blank     = filter_var(get_option('cgr_hide_blank_reviews', 1), FILTER_VALIDATE_BOOLEAN);
 
         $display_stored_reviews = $stored_reviews; // Backend table shows all
@@ -304,10 +308,16 @@ class CGR_Admin {
         $filtered_reviews = array();
         if ( ! empty($stored_reviews) ) {
             foreach ( $stored_reviews as $rev ) { 
-                $len = function_exists('mb_strlen') ? mb_strlen($rev['review_text']) : strlen($rev['review_text']);
-                if ( $hide_blank && empty( trim( $rev['review_text'] ) ) ) continue;
-                if ( $len < $min_chars ) continue;
-                if ( (int) $rev['rating'] >= $min_rating ) { $filtered_reviews[] = $rev; } 
+                $rev_text = trim( $rev['review_text'] );
+                $words_arr = $rev_text !== '' ? preg_split('/\s+/u', $rev_text, -1, PREG_SPLIT_NO_EMPTY) : array();
+                $word_count = count($words_arr);
+                
+                if ( $hide_blank && empty( $rev_text ) ) continue;
+                if ( $word_count < $min_words ) continue;
+                
+                if ( (int) $rev['rating'] >= $min_rating ) { 
+                    $filtered_reviews[] = $rev; 
+                } 
             }
             if ( $sort_order === 'highest' ) { usort( $filtered_reviews, function($a, $b) { return ( (int)$b['rating'] <=> (int)$a['rating'] ); }); } 
             elseif ( $sort_order === 'newest' ) { usort( $filtered_reviews, function($a, $b) { return ( (int)$b['review_time'] <=> (int)$a['review_time'] ); }); } 
@@ -473,16 +483,20 @@ class CGR_Admin {
                         <label class="cgr-label">Max Reviews</label>
                         <input type="number" name="cgr_review_limit" id="cgr_review_limit" value="<?php echo esc_attr(get_option('cgr_review_limit', 5)); ?>" class="cgr-input cgr-input-small" />
                     </div>
+                    
                     <div class="cgr-form-group cgr-row cgr-all">
-                        <label class="cgr-label">Min Character Length</label>
-                        <input type="number" name="cgr_min_char_length" id="cgr_min_char_length" value="<?php echo esc_attr(get_option('cgr_min_char_length', 0)); ?>" class="cgr-input cgr-input-small" />
+                        <label class="cgr-label">Minimum Word Count</label>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="number" name="cgr_min_char_length" id="cgr_min_char_length" value="<?php echo esc_attr(get_option('cgr_min_char_length', 0)); ?>" class="cgr-input cgr-input-small" /> words
+                        </div>
                     </div>
                     <div class="cgr-form-group cgr-row cgr-all">
-                        <label class="cgr-label">Read More Cutoff Limit</label>
-                        <input type="number" name="cgr_excerpt_length" id="cgr_excerpt_length" value="<?php echo esc_attr(get_option('cgr_excerpt_length', 160)); ?>" class="cgr-input cgr-input-small" />
+                        <label class="cgr-label">Read More Word Cutoff</label>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <input type="number" name="cgr_excerpt_length" id="cgr_excerpt_length" value="<?php echo esc_attr(get_option('cgr_excerpt_length', 30)); ?>" class="cgr-input cgr-input-small" /> words
+                        </div>
                     </div>
 
-                    <!-- Read More Ordering -->
                     <div class="cgr-form-group cgr-row cgr-all">
                         <label class="cgr-label">"Read More" Button Position</label>
                         <select name="cgr_readmore_position" id="cgr_readmore_position" class="cgr-input">
@@ -683,13 +697,17 @@ class CGR_Admin {
                                 $index = 1;
                                 foreach($preview_data as $rev) : 
                                     $raw_text = trim($rev['review_text']);
-                                    $text_len = function_exists('mb_strlen') ? mb_strlen($raw_text) : strlen($raw_text);
-                                    if ($excerpt_length > 0 && $text_len > $excerpt_length) {
-                                        $short_slice = function_exists('mb_substr') ? mb_substr($raw_text, 0, $excerpt_length) : substr($raw_text, 0, $excerpt_length);
-                                        $preview_quote = rtrim($short_slice);
+                                    // New Word Count PHP Logic
+                                    $words_arr = $raw_text !== '' ? preg_split('/\s+/u', $raw_text, -1, PREG_SPLIT_NO_EMPTY) : array();
+                                    $word_count = count($words_arr);
+                                    
+                                    if ($excerpt_length > 0 && $word_count > $excerpt_length) {
+                                        $short_slice = implode(' ', array_slice($words_arr, 0, $excerpt_length));
+                                        $preview_quote = rtrim($short_slice, '.,!?');
                                     } else {
                                         $preview_quote = $raw_text;
                                     }
+                                    $avatar_url = !empty($rev['profile_photo_url']) ? $rev['profile_photo_url'] : '';
                                 ?>
                                     <div class="cgr-preview-node-item" id="preview-item-<?php echo $index; ?>">
                                         <div class="cgr-card-node" id="preview-card-<?php echo $index; ?>">
@@ -698,8 +716,8 @@ class CGR_Admin {
                                             <p class="cgr-quote" data-raw-text="<?php echo esc_attr($raw_text); ?>" data-short-text="<?php echo esc_attr($preview_quote); ?>">"<?php echo esc_html($preview_quote); ?>"</p>
                                             
                                             <div class="cgr-author-profile">
-                                                <?php if(!empty($rev['profile_photo_url'])) : ?>
-                                                    <img src="<?php echo esc_url($rev['profile_photo_url']); ?>" class="cgr-preview-avatar" alt="">
+                                                <?php if(!empty($avatar_url)) : ?>
+                                                    <img src="<?php echo esc_url($avatar_url); ?>" class="cgr-preview-avatar" alt="">
                                                 <?php else: ?>
                                                     <div class="cgr-preview-avatar cgr-avatar-fallback"><?php echo esc_html(substr($rev['author_name'],0,2)); ?></div>
                                                 <?php endif; ?>
@@ -750,11 +768,13 @@ class CGR_Admin {
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ( $paged_reviews as $rev ) : ?>
+                            <?php foreach ( $paged_reviews as $rev ) : 
+                                $avatar_url = !empty($rev['profile_photo_url']) ? $rev['profile_photo_url'] : '';
+                            ?>
                                 <tr>
                                     <td>
-                                        <?php if ( !empty($rev['profile_photo_url']) ) : ?>
-                                            <img src="<?php echo esc_url($rev['profile_photo_url']); ?>" class="cgr-table-avatar" alt="">
+                                        <?php if ( !empty($avatar_url) ) : ?>
+                                            <img src="<?php echo esc_url($avatar_url); ?>" class="cgr-table-avatar" alt="">
                                         <?php else : ?>
                                             <div class="cgr-table-avatar cgr-avatar-fallback">?</div>
                                         <?php endif; ?>
